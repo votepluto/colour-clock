@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Colour Clock</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@200&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 200;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.02));
+      transition: background-color 1s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    #clock {
+      font-size: min(15vw, 15vh);
+      color: white;
+      text-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+    }
+
+    .toggle-container {
+      margin-top: 20px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .toggle-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background-color: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 1.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+
+    .toggle-button:focus {
+      outline: none;
+    }
+
+    @media (max-height: 300px) {
+      #clock {
+        font-size: 6vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="clock">00:00:00</div>
+  <div class="toggle-container">
+    <button class="toggle-button" onclick="setMode('time')">&#128336;</button>
+    <button class="toggle-button" onclick="setMode('hex')">#</button>
+  </div>
+
+  <script>
+    let mode = 'time';
+
+    function updateClock() {
+      const now = new Date();
+      const h = now.getHours().toString().padStart(2, '0');
+      const m = now.getMinutes().toString().padStart(2, '0');
+      const s = now.getSeconds().toString().padStart(2, '0');
+      const hex = '#' + h + m + s;
+      document.body.style.backgroundColor = hex;
+      document.getElementById('clock').innerText = mode === 'time' ? h + ':' + m + ':' + s : hex;
+    }
+
+    function setMode(selectedMode) {
+      mode = selectedMode;
+      updateClock();
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
