@@ -23,21 +23,35 @@
       box-sizing: border-box;
     }
 
+    .wrapper {
+      flex-grow: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
     #clock {
-      font-size: min(15vw, 15vh);
+      font-size: min(18vw, 16vh);
       color: white;
       text-shadow: 0px 0px 10px rgba(0,0,0,0.3);
     }
 
     .toggle-container {
-      margin-top: 20px;
+      height: auto;
+      padding-bottom: 1.5vh;
       display: flex;
-      gap: 20px;
+      gap: 1rem;
     }
 
     .toggle-button {
       width: 40px;
       height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      max-width: 40px;
+      max-height: 40px;
       border-radius: 50%;
       border: none;
       background-color: rgba(255,255,255,0.2);
@@ -48,21 +62,18 @@
       justify-content: center;
       cursor: pointer;
       backdrop-filter: blur(4px);
+      flex-shrink: 0;
     }
 
     .toggle-button:focus {
       outline: none;
     }
-
-    @media (max-height: 300px) {
-      #clock {
-        font-size: 6vh;
-      }
-    }
   </style>
 </head>
 <body>
-  <div id="clock">00:00:00</div>
+  <div class="wrapper">
+    <div id="clock">00:00:00</div>
+  </div>
   <div class="toggle-container">
     <button class="toggle-button" onclick="setMode('time')">&#128336;</button>
     <button class="toggle-button" onclick="setMode('hex')">#</button>
