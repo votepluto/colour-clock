@@ -1,25 +1,24 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Colour Clock</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@200&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
   <style>
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      font-family: 'IBM Plex Mono', monospace;
-      font-weight: 200;
-      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.02));
-      transition: background-color 1s ease;
+      font-family: 'Noto Sans', sans-serif;
+      font-weight: 400;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      background-color: #000;
+      transition: background-color 1s ease;
       box-sizing: border-box;
     }
 
@@ -35,37 +34,29 @@
     #clock {
       font-size: min(18vw, 16vh);
       color: white;
-      text-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+      text-shadow: 0 0 10px rgba(0,0,0,0.3);
+      margin-bottom: 1rem;
     }
 
-    .toggle-container {
-      height: auto;
-      padding-bottom: 1.5vh;
+    .controls {
       display: flex;
+      flex-direction: row;
       gap: 1rem;
+      margin-bottom: 1.5vh;
     }
 
-    .toggle-button {
-      width: 40px;
-      height: 40px;
-      min-width: 40px;
-      min-height: 40px;
-      max-width: 40px;
-      max-height: 40px;
-      border-radius: 50%;
-      border: none;
+    .button {
+      padding: 8px 14px;
+      font-size: 0.9rem;
       background-color: rgba(255,255,255,0.2);
+      border: none;
+      border-radius: 6px;
       color: white;
-      font-size: 1.2em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       cursor: pointer;
       backdrop-filter: blur(4px);
-      flex-shrink: 0;
     }
 
-    .toggle-button:focus {
+    .button:focus {
       outline: none;
     }
   </style>
@@ -73,14 +64,63 @@
 <body>
   <div class="wrapper">
     <div id="clock">00:00:00</div>
-  </div>
-  <div class="toggle-container">
-    <button class="toggle-button" onclick="setMode('time')">&#128336;</button>
-    <button class="toggle-button" onclick="setMode('hex')">#</button>
+    <div class="controls">
+      <button class="button" onclick="setMode('default')">Default</button>
+      <button class="button" onclick="setMode('pastel')">Pastel</button>
+      <button class="button" onclick="setMode('deep')">Deep</button>
+      <button class="button" onclick="copyHex()">📋 Copy</button>
+    </div>
   </div>
 
   <script>
-    let mode = 'time';
+    let mode = 'default';
+    let currentHex = '#000000';
+
+    function hexToHSL(hex) {
+      const r = parseInt(hex.slice(1, 3), 16) / 255;
+      const g = parseInt(hex.slice(3, 5), 16) / 255;
+      const b = parseInt(hex.slice(5, 7), 16) / 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h = h * 60;
+      }
+      return [h, s * 100, l * 100];
+    }
+
+    function hslToHex(h, s, l) {
+      s /= 100;
+      l /= 100;
+      const k = n => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => {
+        const color = l - a * Math.max(Math.min(k(n) - 3, 9 - k(n), 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`;
+    }
+
+    function applyBackground(hex) {
+      if (mode === 'pastel' || mode === 'deep') {
+        const [h, s, l] = hexToHSL(hex);
+        const newL = mode === 'pastel' ? 80 : 25;
+        const newS = mode === 'pastel' ? 60 : 50;
+        currentHex = hslToHex(h, newS, newL);
+      } else {
+        currentHex = hex;
+      }
+      document.body.style.backgroundColor = currentHex;
+    }
 
     function updateClock() {
       const now = new Date();
@@ -88,13 +128,19 @@
       const m = now.getMinutes().toString().padStart(2, '0');
       const s = now.getSeconds().toString().padStart(2, '0');
       const hex = '#' + h + m + s;
-      document.body.style.backgroundColor = hex;
-      document.getElementById('clock').innerText = mode === 'time' ? h + ':' + m + ':' + s : hex;
+      document.getElementById('clock').innerText = h + ':' + m + ':' + s;
+      applyBackground(hex);
     }
 
-    function setMode(selectedMode) {
-      mode = selectedMode;
+    function setMode(m) {
+      mode = m;
       updateClock();
+    }
+
+    function copyHex() {
+      navigator.clipboard.writeText(currentHex).then(() => {
+        alert('Copied: ' + currentHex);
+      });
     }
 
     setInterval(updateClock, 1000);
